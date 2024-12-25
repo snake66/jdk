@@ -92,11 +92,4 @@ public final class StreamBarrier implements Closeable {
             return used;
         }
     }
-
-    /**
-     * Returns {@code true) if barrier is, or has been, in active state, {@code false) otherwise.
-     */
-    public synchronized boolean used() {
-        return used;
-    }
 }

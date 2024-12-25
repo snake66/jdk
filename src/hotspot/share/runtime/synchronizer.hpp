@@ -130,11 +130,6 @@ public:
   // throwing unexpected InterruptedExecutionExceptions.
   static void waitUninterruptibly(Handle obj, jlong Millis, TRAPS);
 
-  // Special internal-use-only method for use by JVM infrastructure
-  // that needs to wait() on a java-level object but that can't risk
-  // throwing unexpected InterruptedExecutionExceptions.
-  static void waitUninterruptibly(Handle obj, jlong Millis, TRAPS);
-
   // Inflate light weight monitor to heavy weight monitor
   static ObjectMonitor* inflate(Thread* current, oop obj, const InflateCause cause);
   // Used to inflate a monitor as if it was done from the thread JavaThread.
