@@ -76,9 +76,11 @@ ifneq ($(OPENJDK_TARGET_OS_ENV), bsd.openbsd)
       EXTRA_HEADER_DIRS := java.base:libjava, \
       CFLAGS := $(LIBJSOUND_CFLAGS), \
       CXXFLAGS := $(LIBJSOUND_CFLAGS), \
-      DISABLED_WARNINGS_gcc := undef, \
-      DISABLED_WARNINGS_clang := undef, \
-      LDFLAGS_bsd := $(ICONV_LDFLAGS), \
+      DISABLED_WARNINGS_gcc := undef unused-variable, \
+      DISABLED_WARNINGS_clang := undef unused-variable, \
+      DISABLED_WARNINGS_clang_PLATFORM_API_MacOSX_MidiUtils.c := \
+          unused-but-set-variable, \
+      DISABLED_WARNINGS_clang_DirectAudioDevice.c := unused-function, \
       LIBS_linux := $(ALSA_LIBS), \
       LIBS_bsd := $(ALSA_LIBS), \
       LIBS_macosx := \

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -981,9 +981,9 @@ public final class Main {
             // if certProtectionAlgorithm and macAlgorithm are both NONE.
             if (storetype.equalsIgnoreCase("pkcs12")) {
                 isPasswordlessKeyStore =
-                        "NONE".equals(SecurityProperties.privilegedGetOverridable(
+                        "NONE".equals(SecurityProperties.getOverridableProperty(
                                 "keystore.pkcs12.certProtectionAlgorithm"))
-                        && "NONE".equals(SecurityProperties.privilegedGetOverridable(
+                        && "NONE".equals(SecurityProperties.getOverridableProperty(
                                 "keystore.pkcs12.macAlgorithm"));
             }
 
@@ -1789,7 +1789,8 @@ public final class Main {
      */
     private char[] promptForCredential() throws Exception {
         // Handle password supplied via stdin
-        if (System.console() == null) {
+        Console console = System.console();
+        if (console == null || !console.isTerminal()) {
             char[] importPass = Password.readPassword(System.in);
             passwords.add(importPass);
             return importPass;

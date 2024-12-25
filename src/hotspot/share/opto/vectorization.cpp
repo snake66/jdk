@@ -26,13 +26,12 @@
 #include "opto/addnode.hpp"
 #include "opto/connode.hpp"
 #include "opto/convertnode.hpp"
-#include "opto/matcher.hpp"
 #include "opto/mulnode.hpp"
 #include "opto/rootnode.hpp"
 #include "opto/vectorization.hpp"
 
 #ifndef PRODUCT
-static void print_con_or_idx(const Node* n) {
+void VPointer::print_con_or_idx(const Node* n) {
   if (n == nullptr) {
     tty->print("(   0)");
   } else if (n->is_ConI()) {
@@ -202,7 +201,7 @@ void VLoopVPointers::allocate_vpointers_array() {
 
 void VLoopVPointers::compute_and_cache_vpointers() {
   int pointers_idx = 0;
-  _body.for_each_mem([&] (const MemNode* mem, int bb_idx) {
+  _body.for_each_mem([&] (MemNode* const mem, int bb_idx) {
     // Placement new: construct directly into the array.
     ::new (&_vpointers[pointers_idx]) VPointer(mem, _vloop);
     _bb_idx_to_vpointer.at_put(bb_idx, pointers_idx);
@@ -410,7 +409,7 @@ void VLoopDependencyGraph::PredsIterator::next() {
 int VPointer::Tracer::_depth = 0;
 #endif
 
-VPointer::VPointer(const MemNode* mem, const VLoop& vloop,
+VPointer::VPointer(MemNode* const mem, const VLoop& vloop,
                    Node_Stack* nstack, bool analyze_only) :
   _mem(mem), _vloop(vloop),
   _base(nullptr), _adr(nullptr), _scale(0), _offset(0), _invar(nullptr),
@@ -1321,20 +1320,61 @@ bool VPointer::try_MulI_no_overflow(int offset1, int offset2, int& result) {
   return true;
 }
 
+// We use two comparisons, because a subtraction could underflow.
+#define RETURN_CMP_VALUE_IF_NOT_EQUAL(a, b) \
+  if (a < b) { return -1; }                 \
+  if (a > b) { return  1; }
+
+// To be in the same group, two VPointers must be the same,
+// except for the offset.
+int VPointer::cmp_for_sort_by_group(const VPointer** p1, const VPointer** p2) {
+  const VPointer* a = *p1;
+  const VPointer* b = *p2;
+
+  RETURN_CMP_VALUE_IF_NOT_EQUAL(a->base()->_idx,     b->base()->_idx);
+  RETURN_CMP_VALUE_IF_NOT_EQUAL(a->mem()->Opcode(),  b->mem()->Opcode());
+  RETURN_CMP_VALUE_IF_NOT_EQUAL(a->scale_in_bytes(), b->scale_in_bytes());
+
+  int a_inva_idx = a->invar() == nullptr ? 0 : a->invar()->_idx;
+  int b_inva_idx = b->invar() == nullptr ? 0 : b->invar()->_idx;
+  RETURN_CMP_VALUE_IF_NOT_EQUAL(a_inva_idx,          b_inva_idx);
+
+  return 0; // equal
+}
+
+// We compare by group, then by offset, and finally by node idx.
+int VPointer::cmp_for_sort(const VPointer** p1, const VPointer** p2) {
+  int cmp_group = cmp_for_sort_by_group(p1, p2);
+  if (cmp_group != 0) { return cmp_group; }
+
+  const VPointer* a = *p1;
+  const VPointer* b = *p2;
+
+  RETURN_CMP_VALUE_IF_NOT_EQUAL(a->offset_in_bytes(), b->offset_in_bytes());
+  RETURN_CMP_VALUE_IF_NOT_EQUAL(a->mem()->_idx,       b->mem()->_idx);
+  return 0; // equal
+}
+
 #ifndef PRODUCT
 // Function for printing the fields of a VPointer
 void VPointer::print() const {
   tty->print("VPointer[mem: %4d %10s, ", _mem->_idx, _mem->Name());
+
+  if (!valid()) {
+    tty->print_cr("invalid]");
+    return;
+  }
+
   tty->print("base: %4d, ", _base != nullptr ? _base->_idx : 0);
   tty->print("adr: %4d, ", _adr != nullptr ? _adr->_idx : 0);
 
   tty->print(" base");
-  print_con_or_idx(_base);
+  VPointer::print_con_or_idx(_base);
 
   tty->print(" + offset(%4d)", _offset);
 
   tty->print(" + invar");
-  print_con_or_idx(_invar);
+  VPointer::print_con_or_idx(_invar);
 
   tty->print_cr(" + scale(%4d) * iv]", _scale);
 }
@@ -2128,15 +2168,15 @@ void AlignmentSolver::trace_start_solve() const {
 
     // iv = init + pre_iter * pre_stride + main_iter * main_stride
     tty->print("  iv = init");
-    print_con_or_idx(_init_node);
+    VPointer::print_con_or_idx(_init_node);
     tty->print_cr(" + pre_iter * pre_stride(%d) + main_iter * main_stride(%d)",
                   _pre_stride, _main_stride);
 
     // adr = base + offset + invar + scale * iv
     tty->print("  adr = base");
-    print_con_or_idx(_base);
+    VPointer::print_con_or_idx(_base);
     tty->print(" + offset(%d) + invar", _offset);
-    print_con_or_idx(_invar);
+    VPointer::print_con_or_idx(_invar);
     tty->print_cr(" + scale(%d) * iv", _scale);
   }
 }

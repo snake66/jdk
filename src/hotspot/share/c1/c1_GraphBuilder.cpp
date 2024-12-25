@@ -3339,6 +3339,7 @@ GraphBuilder::GraphBuilder(Compilation* compilation, IRScope* scope)
   case vmIntrinsics::_dsin          : // fall through
   case vmIntrinsics::_dcos          : // fall through
   case vmIntrinsics::_dtan          : // fall through
+  case vmIntrinsics::_dtanh         : // fall through
   case vmIntrinsics::_dlog          : // fall through
   case vmIntrinsics::_dlog10        : // fall through
   case vmIntrinsics::_dexp          : // fall through
@@ -3524,6 +3525,9 @@ static void set_flags_for_inlined_callee(Compilation* compilation, ciMethod* cal
   }
   if (callee->is_synchronized() || callee->has_monitor_bytecodes()) {
     compilation->set_has_monitors(true);
+  }
+  if (callee->is_scoped()) {
+    compilation->set_has_scoped_access(true);
   }
 }
 

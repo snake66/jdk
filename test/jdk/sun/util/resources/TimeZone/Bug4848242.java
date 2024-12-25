@@ -45,7 +45,6 @@ public class Bug4848242 {
     {
         Locale tzLocale = Locale.of(langName, locName);
         TimeZone euroTz = TimeZone.getTimeZone("MET");
-
         System.out.println("Locale is " + langName + "_" + locName);
 
         if ( euroTz.getID().equalsIgnoreCase("GMT") ) {
@@ -55,12 +54,12 @@ public class Bug4848242 {
 
         // get the timezone info
         System.out.println(euroTz.getDisplayName(false, TimeZone.SHORT, tzLocale));
-        if(!euroTz.getDisplayName(false, TimeZone.SHORT, tzLocale).equals("CET"))
-          throw new RuntimeException("Timezone name is incorrect (should be CET)\n");
+        if (!euroTz.getDisplayName(false, TimeZone.SHORT, tzLocale).equals("CET"))
+            throw new RuntimeException("Timezone name is incorrect (should be CET)\n");
         System.out.println(euroTz.getDisplayName(false, TimeZone.LONG, tzLocale));
 
         System.out.println(euroTz.getDisplayName(true, TimeZone.SHORT, tzLocale));
-        if(!euroTz.getDisplayName(true, TimeZone.SHORT, tzLocale).equals("CEST"))
+        if (!euroTz.getDisplayName(true, TimeZone.SHORT, tzLocale).equals("CEST"))
             throw new RuntimeException("Summer timezone name is incorrect (should be CEST)\n");
         System.out.println(euroTz.getDisplayName(true, TimeZone.LONG, tzLocale) + "\n");
 

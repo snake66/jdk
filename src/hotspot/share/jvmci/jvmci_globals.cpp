@@ -26,6 +26,7 @@
 #include "compiler/compilerDefinitions.hpp"
 #include "gc/shared/gcConfig.hpp"
 #include "jvm.h"
+#include "jvmci/jvmci.hpp"
 #include "jvmci/jvmci_globals.hpp"
 #include "logging/log.hpp"
 #include "runtime/arguments.hpp"
@@ -90,8 +91,7 @@ bool JVMCIGlobals::check_jvmci_flags_are_consistent() {
 
   if (EnableJVMCI) {
     if (FLAG_IS_DEFAULT(UseJVMCINativeLibrary) && !UseJVMCINativeLibrary) {
-      char path[JVM_MAXPATHLEN];
-      if (os::dll_locate_lib(path, sizeof(path), Arguments::get_dll_dir(), JVMCI_SHARED_LIBRARY_NAME)) {
+      if (JVMCI::shared_library_exists()) {
         // If a JVMCI native library is present,
         // we enable UseJVMCINativeLibrary by default.
         FLAG_SET_DEFAULT(UseJVMCINativeLibrary, true);
@@ -229,16 +229,14 @@ bool JVMCIGlobals::enable_jvmci_product_mode(JVMFlagOrigin origin, bool use_graa
 }
 
 bool JVMCIGlobals::gc_supports_jvmci() {
-  return UseSerialGC || UseParallelGC || UseG1GC || (UseZGC && !ZGenerational);
+  return UseSerialGC || UseParallelGC || UseG1GC || UseZGC || UseEpsilonGC;
 }
 
 void JVMCIGlobals::check_jvmci_supported_gc() {
   if (EnableJVMCI) {
     // Check if selected GC is supported by JVMCI and Java compiler
     if (!gc_supports_jvmci()) {
-      log_warning(gc, jvmci)("Setting EnableJVMCI to false as selected GC does not support JVMCI: %s", GCConfig::hs_err_name());
-      FLAG_SET_DEFAULT(EnableJVMCI, false);
-      FLAG_SET_DEFAULT(UseJVMCICompiler, false);
+      fatal("JVMCI does not support the selected GC");
     }
   }
 }

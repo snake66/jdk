@@ -28,7 +28,7 @@ import javax.net.ssl.*;
 
 /**
  * @test
- * @bug 8337664
+ * @bug 8337664 8341059
  * @summary Check that TLS Server certificates chaining back to distrusted
  *          Entrust roots are invalid
  * @library /test/lib

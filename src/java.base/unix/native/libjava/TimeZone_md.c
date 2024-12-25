@@ -41,8 +41,6 @@
 #include "TimeZone_md.h"
 #include "path_util.h"
 
-static char *isFileIdentical(char* buf, size_t size, char *pathname);
-
 #define fileopen        fopen
 #define filegets        fgets
 #define fileclose       fclose
@@ -63,11 +61,8 @@ static const char *DEFAULT_ZONEINFO_FILE = "/usr/share/lib/zoneinfo/localtime";
 
 static const char popularZones[][4] = {"UTC", "GMT"};
 
-#if defined(_AIX)
-static const char *ETC_ENVIRONMENT_FILE = "/etc/environment";
-#endif
-
 #if defined(__linux__) || defined(_ALLBSD_SOURCE) || defined(MACOSX)
+static char *isFileIdentical(char* buf, size_t size, char *pathname);
 
 /*
  * remove repeated path separators ('/') in the given 'path'.
@@ -360,6 +355,7 @@ getPlatformTimeZoneID()
 }
 
 #elif defined(_AIX)
+static const char *ETC_ENVIRONMENT_FILE = "/etc/environment";
 
 static char *
 getPlatformTimeZoneID()
