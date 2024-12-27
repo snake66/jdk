@@ -1354,7 +1354,7 @@ void InstanceKlass::set_initialization_state_and_notify(ClassState state, TRAPS)
 
 // Update hierarchy. This is done before the new klass has been added to the SystemDictionary. The Compile_lock
 // is grabbed, to ensure that the compiler is not using the class hierarchy.
-void InstanceKlass::add_to_hierarchy_impl(JavaThread* current) {
+void InstanceKlass::add_to_hierarchy(JavaThread* current) {
   assert(!SafepointSynchronize::is_at_safepoint(), "must NOT be at safepoint");
 
   DeoptimizationScope deopt_scope;
