@@ -37,6 +37,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /*
  * Bsd implementation of HotSpotVirtualMachine
  */
+@SuppressWarnings("restricted")
 public class VirtualMachineImpl extends HotSpotVirtualMachine {
     // "tmpdir" is used as a global well-known location for the files
     // .java_pid<pid>. and .attach_pid<pid>. It is important that this
@@ -59,7 +60,7 @@ public class VirtualMachineImpl extends HotSpotVirtualMachine {
         // This provider only understands pids
         int pid = Integer.parseInt(vmid);
         if (pid < 1) {
-            throw new AttachNotSupportedException("Invalid process identifier");
+            throw new AttachNotSupportedException("Invalid process identifier: " + vmid);
         }
 
         // Find the socket file. If not found then we attempt to start the
