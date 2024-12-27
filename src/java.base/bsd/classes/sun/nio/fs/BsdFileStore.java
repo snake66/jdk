@@ -30,7 +30,6 @@ import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Arrays;
-import sun.security.action.GetPropertyAction;
 
 /**
  * Bsd implementation of FileStore

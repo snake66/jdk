@@ -29,7 +29,6 @@ import java.nio.file.*;
 import java.io.IOException;
 import java.util.*;
 import java.security.AccessController;
-import sun.security.action.GetPropertyAction;
 
 /**
  * Bsd implementation of FileSystem
