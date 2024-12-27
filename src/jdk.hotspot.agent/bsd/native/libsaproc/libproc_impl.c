@@ -22,6 +22,7 @@
  *
  */
 #include "libproc_impl.h"
+#include "jni.h"
 #include "jni_md.h"
 #include "salibelf.h"
 
