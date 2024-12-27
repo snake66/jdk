@@ -380,9 +380,6 @@ private:
   // log status, assuming lock has already been acquired by the caller.
   void log_status();
 
-  // log status, assuming lock has already been acquired by the caller.
-  void log_status();
-
 public:
   ShenandoahFreeSet(ShenandoahHeap* heap, size_t max_regions);
 
