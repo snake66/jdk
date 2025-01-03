@@ -63,6 +63,8 @@ ifeq ($(USE_EXTERNAL_LCMS), true)
   # If we're using an external library, we can't include our own SRC path
   # as includes, instead the system headers should be used.
   LIBLCMS_HEADERS_FROM_SRC := false
+  # FIXME: Keep old behavior and reset LCMS_CFLAGS. This is likely a bug.
+  LCMS_CFLAGS :=
 endif
 
 ifeq ($(TOOLCHAIN_TYPE)+$(TOOLCHAIN_VERSION), clang+10.1)
@@ -257,16 +259,16 @@ ifeq ($(ENABLE_HEADLESS_ONLY), false)
       JDK_LIBS_windows := java.base:libjava, \
       JDK_LIBS_macosx := libosxapp, \
       LIBS := $(GIFLIB_LIBS) $(LIBJPEG_LIBS) $(LIBZ_LIBS) $(PNG_LIBS), \
-      LIBS_unix := $(LIBM), \
-      LIBS_linux := -lpthread $(LIBDL) $(X_LIBS) -lX11 -lXext, \
+      LIBS_unix := $(LIBM) -lpthread, \
+      LIBS_linux := $(LIBDL) $(X_LIBS) -lX11 -lXext, \
       LIBS_bsd := -pthread $(ICONV_LIBS) $(X_LIBS) -lX11 -lXext, \
-      LIBS_macosx := -lpthread -liconv \
+      LIBS_macosx := -liconv \
           -framework ApplicationServices \
           -framework Cocoa \
           -framework Foundation \
           -framework Metal \
           -framework Security, \
-      LIBS_aix := -lpthread $(LIBDL) -liconv $(X_LIBS) -lX11 -lXext, \
+      LIBS_aix := $(LIBDL) -liconv $(X_LIBS) -lX11 -lXext, \
       LIBS_windows := delayimp.lib gdi32.lib kernel32.lib user32.lib, \
       STATIC_LIB_EXCLUDE_OBJS := $(LIBSPLASHSCREEN_STATIC_LIB_EXCLUDE_OBJS), \
   ))
