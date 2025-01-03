@@ -270,7 +270,6 @@ extern "C"
 JNIEXPORT jlong JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_lookupByName0
   (JNIEnv *env, jobject this_obj, jstring objectName, jstring symbolName) {
   jlong addr;
-  jboolean isCopy;
   struct ps_prochandle* ph = get_proc_handle(env, this_obj);
   // Note, objectName is ignored, and may in fact be NULL.
   // lookup_symbol will always search all objects/libs
