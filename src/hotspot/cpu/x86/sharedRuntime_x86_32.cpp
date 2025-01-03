@@ -1892,7 +1892,7 @@ nmethod* SharedRuntime::generate_native_wrapper(MacroAssembler* masm,
 
   // reset handle block
   __ movptr(rcx, Address(thread, JavaThread::active_handles_offset()));
-  __ movl(Address(rcx, JNIHandleBlock::top_offset()), (int32_t)NULL_WORD);
+  __ movl(Address(rcx, JNIHandleBlock::top_offset()), NULL_WORD);
 
   // Any exception pending?
   __ cmpptr(Address(thread, in_bytes(Thread::pending_exception_offset())), NULL_WORD);
