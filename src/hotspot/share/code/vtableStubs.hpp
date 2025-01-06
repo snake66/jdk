@@ -28,7 +28,6 @@
 #include "asm/macroAssembler.hpp"
 #include "code/vmreg.hpp"
 #include "memory/allStatic.hpp"
-#include "sanitizers/ub.hpp"
 #include "utilities/checkedCast.hpp"
 
 // A VtableStub holds an individual code stub for a pair (vtable index, #args) for either itables or vtables
