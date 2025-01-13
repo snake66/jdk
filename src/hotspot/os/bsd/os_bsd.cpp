@@ -101,7 +101,7 @@
 # include <time.h>
 # include <unistd.h>
 
-#if !defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__NetBSD__)
   #include <elf.h>
 #endif
 
