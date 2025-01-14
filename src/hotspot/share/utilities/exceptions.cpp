@@ -48,9 +48,6 @@
 // Limit exception message components to 64K (the same max as Symbols)
 #define MAX_LEN 65535
 
-// Limit exception message components to 64K (the same max as Symbols)
-#define MAX_LEN 65535
-
 // Implementation of ThreadShadow
 void check_ThreadShadow() {
   const ByteSize offset1 = byte_offset_of(ThreadShadow, _pending_exception);
