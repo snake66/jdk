@@ -505,7 +505,7 @@ size_t UNICODE::utf8_length(const T* base, int length) {
   for (int index = 0; index < length; index++) {
     result += utf8_size(base[index]);
   }
-  return checked_cast<int>(result);
+  return result;
 }
 
 template<typename T>

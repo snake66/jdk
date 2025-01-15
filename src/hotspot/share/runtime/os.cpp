@@ -529,6 +529,15 @@ void* os::native_java_library() {
     if (_native_java_library == nullptr) {
       vm_exit_during_initialization("Unable to load native library", ebuf);
     }
+
+#if defined(__OpenBSD__)
+    // Work-around OpenBSD's lack of $ORIGIN support by pre-loading libnet.so
+    // ignore errors
+    if (dll_locate_lib(buffer, sizeof(buffer), Arguments::get_dll_dir(),
+                       "net")) {
+      dll_load(buffer, ebuf, sizeof(ebuf));
+    }
+#endif
   }
   return _native_java_library;
 }
@@ -1448,7 +1457,7 @@ FILE* os::fopen(const char* path, const char* mode) {
   os::snprintf_checked(modified_mode, sizeof(modified_mode), "%s" LINUX_ONLY("e") BSD_ONLY("e") WINDOWS_ONLY("N"), mode);
   FILE* file = ::fopen(path, modified_mode);
 
-#if !(defined LINUX || defined _ALLBSD_SOURCE || defined _WINDOWS)
+#if !(defined LINUX || defined BSD || defined _WINDOWS)
   // assume fcntl FD_CLOEXEC support as a backup solution when 'e' or 'N'
   // is not supported as mode in fopen
   if (file != nullptr) {

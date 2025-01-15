@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.security.auth.Subject;
-import jdk.internal.access.SharedSecrets;
 
 /**
  * <p>An object of this class implements the MBeanServerAccessController
@@ -298,7 +297,6 @@ public class MBeanServerFileAccessController
         }
     }
 
-    @SuppressWarnings("removal")
     private synchronized void checkAccess(AccessType requiredAccess, String arg) {
         final Subject s = Subject.current();
         if (s == null) return; /* security has not been enabled */

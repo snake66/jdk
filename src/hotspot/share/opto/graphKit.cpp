@@ -1587,7 +1587,6 @@ Node* GraphKit::store_to_memory(Node* ctl, Node* adr, Node *val, BasicType bt,
                                 int barrier_data) {
   int adr_idx = C->get_alias_index(_gvn.type(adr)->isa_ptr());
   assert(adr_idx != Compile::AliasIdxTop, "use other store_to_memory factory" );
-  assert(adr_idx == C->get_alias_index(_gvn.type(adr)->isa_ptr()), "slice of address and input slice don't match");
   const TypePtr* adr_type = nullptr;
   debug_only(adr_type = C->get_adr_type(adr_idx));
   Node *mem = memory(adr_idx);
