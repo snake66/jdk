@@ -121,6 +121,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBJAVAJPEG, \
     NAME := javajpeg, \
     INCLUDE_FILES := $(LIBJAVAJPEG_INCLUDE_FILES), \
     OPTIMIZATION := HIGHEST, \
+    CFLAGS := $(LIBJPEG_CFLAGS), \
     HEADERS_FROM_SRC := $(LIBJAVAJPEG_HEADERS_FROM_SRC), \
     DISABLED_WARNINGS_gcc_imageioJPEG.c := array-bounds clobbered \
         unused-but-set-variable, \
@@ -179,7 +180,7 @@ ifeq ($(ENABLE_HEADLESS_ONLY), false)
   LIBSPLASHSCREEN_CFLAGS += -DSPLASHSCREEN -DPNG_NO_MMX_CODE \
       -DPNG_ARM_NEON_OPT=0 -DPNG_ARM_NEON_IMPLEMENTATION=0
 
-  ifeq ($(call isTargetOs, linux)+$(call isTargetCpuArch, ppc), true+true)
+  ifeq ($(call isTargetOs, linux bsd)+$(call isTargetCpuArch, ppc), true+true)
     LIBSPLASHSCREEN_CFLAGS += -DPNG_POWERPC_VSX_OPT=0
   endif
 
@@ -265,6 +266,8 @@ ifeq ($(ENABLE_HEADLESS_ONLY), false)
       LIBS_unix := $(LIBM) $(LIBPTHREAD), \
       LIBS_linux := $(LIBDL) $(X_LIBS) -lX11 -lXext, \
       LIBS_macosx := \
+      LIBS_bsd := $(X_LIBS) -lX11 -lXext, \
+      LIBS_macosx := \
           -framework ApplicationServices \
           -framework Cocoa \
           -framework Foundation \
@@ -313,7 +316,7 @@ else
         -DHAVE_SYSCONF -DHAVE_SYS_MMAN_H -DHAVE_UNISTD_H \
         -DHB_NO_PRAGMA_GCC_DIAGNOSTIC
   endif
-  ifeq ($(call isTargetOs, linux macosx), true)
+  ifeq ($(call isTargetOs, linux macosx bsd), true)
     HARFBUZZ_CFLAGS += -DHAVE_INTEL_ATOMIC_PRIMITIVES -DHB_NO_VISIBILITY
   endif
 
