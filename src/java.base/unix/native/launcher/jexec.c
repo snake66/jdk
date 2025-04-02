@@ -85,7 +85,9 @@
 #endif
 
 static const int CRAZY_EXEC = ENOEXEC;
+#ifdef __linux__
 static const int BAD_MAGIC  = ENOEXEC;
+#endif
 
 static const char * BAD_EXEC_MSG     = "jexec failed";
 static const char * CRAZY_EXEC_MSG   = "missing args";
@@ -110,11 +112,10 @@ static const int RELATIVE_DEPTH = 3;
 /* path to java after popping */
 static const char * BIN_PATH = "/bin/java";
 
+#ifdef __linux__
 /* flag used when running JAR files */
 static const char * JAR_FLAG = "-jar";
 
-
-#ifdef __linux__
 /* largest possible size for a local file header */
 static const size_t CHUNK_SIZE = 65535;
 
@@ -198,9 +199,10 @@ int main(int argc, const char * argv[]) {
 
     if (argc >= 2) {
         const char * jarfile = argv[argi++];
-        const char * message = NULL;
 
 #ifdef __linux__
+        const char * message = NULL;
+
         /* On Linux we also need to make sure argv[1] is really a JAR
          * file (this will also resolve any symlinks, which helps). */
         char jarPath[PATH_MAX + 1];
