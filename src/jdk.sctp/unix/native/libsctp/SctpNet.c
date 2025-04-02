@@ -39,7 +39,9 @@
 static jclass isaCls = 0;
 static jmethodID isaCtrID = 0;
 
+#ifndef __FreeBSD__
 static const char* nativeSctpLib = "libsctp.so.1";
+#endif
 static jboolean funcsLoaded = JNI_FALSE;
 
 #ifndef __FreeBSD__
