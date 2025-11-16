@@ -76,6 +76,17 @@ jobs:
             suffix: -debug
 
     steps:
+      - name: Setup Host for VM
+        run: |
+          echo "Starting storage:"
+          sudo df -h
+          echo "Removing Android SDKs and Tools"
+          sudo rm -rf /usr/local/lib/android
+          echo "Reduce swappiness"
+          sudo sysctl vm.swappiness=10
+          echo "Available storage:"
+          sudo df -h
+
       - name: 'Checkout the JDK source'
         uses: actions/checkout@v4
 
@@ -154,6 +165,14 @@ jobs:
           platform: ${{ inputs.platform }}
           vm-name: 'freebsd'
           debug-suffix: '${{ matrix.suffix }}'
+
+      - name: 'Check Memory, Swap and Disk Usage'
+        run: |
+          echo "Memory and swap:"
+          sudo free -h
+          echo
+          echo "Available storage:"
+          sudo df -h
 
       - name: 'Upload bundles'
         uses: ./.github/actions/upload-bundles
