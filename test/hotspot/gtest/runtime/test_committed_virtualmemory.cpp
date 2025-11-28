@@ -233,6 +233,7 @@ public:
   }
 };
 
+#if !defined(__OpenBSD__)
 TEST_VM(CommittedVirtualMemoryTracker, test_committed_virtualmemory_region) {
 
   //  This tests the VM-global NMT facility. The test must *not* modify global state,
@@ -249,8 +250,9 @@ TEST_VM(CommittedVirtualMemoryTracker, test_committed_virtualmemory_region) {
   }
 
 }
+#endif
 
-#if !defined(_WINDOWS) && !defined(_AIX)
+#if !defined(_WINDOWS) && !defined(_AIX) && !defined(__OpenBSD__)
 TEST_VM(CommittedVirtualMemory, test_committed_in_range){
   CommittedVirtualMemoryTest::test_committed_in_range(1024, 1024);
   CommittedVirtualMemoryTest::test_committed_in_range(2, 1);

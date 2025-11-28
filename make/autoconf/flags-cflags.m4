@@ -555,7 +555,7 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_HELPER],
     # works for all platforms.
     TOOLCHAIN_CFLAGS_JVM="$TOOLCHAIN_CFLAGS_JVM -mno-omit-leaf-frame-pointer -mstack-alignment=16"
 
-    if test "x$OPENJDK_TARGET_OS" = xlinux; then
+    if test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xbsd; then
       if test "x$DEBUG_LEVEL" = xrelease; then
         # Clang does not inline as much as GCC does for functions with "inline" keyword by default.
         # This causes noticeable slowdown in pause time for G1, and possibly in other areas.
@@ -564,15 +564,6 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_HELPER],
       fi
       TOOLCHAIN_CFLAGS_JDK="-pipe"
       TOOLCHAIN_CFLAGS_JDK_CONLY="-fno-strict-aliasing" # technically NOT for CXX
-    elif test "x$OPENJDK_TARGET_OS" = xbsd; then
-      TOOLCHAIN_CFLAGS_JDK="-pipe"
-      TOOLCHAIN_CFLAGS_JDK_CONLY="-fno-strict-aliasing" # technically NOT for CXX
-
-      FLAGS_CXX_COMPILER_CHECK_ARGUMENTS(ARGUMENT: [$CXXSTD_CXXFLAG -Werror],
-                                                    IF_FALSE: [CXXSTD_CXXFLAG=""])
-      TOOLCHAIN_CFLAGS_JDK_CXXONLY="$CXXSTD_CXXFLAG"
-      TOOLCHAIN_CFLAGS_JVM="$TOOLCHAIN_CFLAGS_JVM $CXXSTD_CXXFLAG"
-      ADLC_CXXFLAG="$CXXSTD_CXXFLAG"
     fi
 
     if test "x$OPENJDK_TARGET_OS" = xaix; then
@@ -580,7 +571,7 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_HELPER],
       TOOLCHAIN_CFLAGS_JDK="-ffunction-sections -fsigned-char"
     fi
 
-    if test "x$OPENJDK_TARGET_OS_ENV" != xbsd.freebsd; then
+    if test "x$OPENJDK_TARGET_OS" != xbsd; then
       TOOLCHAIN_CFLAGS_JVM="$TOOLCHAIN_CFLAGS_JVM -fvisibility=hidden"
     fi
 
@@ -764,7 +755,7 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_CPU_DEP],
     fi
 
   elif test "x$TOOLCHAIN_TYPE" = xclang; then
-    if test "x$FLAGS_OS" = xlinux; then
+    if test "x$FLAGS_OS" = xlinux || test "x$OPENJDK_TARGET_OS_ENV" = xbsd.freebsd; then
       # ppc test not really needed for clang
       if test "x$FLAGS_CPU_ARCH" != xarm &&  test "x$FLAGS_CPU_ARCH" != xppc; then
         # for all archs except arm and ppc, prevent gcc to omit frame pointer
@@ -774,14 +765,6 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_CPU_DEP],
         # Little endian machine uses ELFv2 ABI.
         # Use Power8, this is the first CPU to support PPC64 LE with ELFv2 ABI.
         $1_CFLAGS_CPU_JVM="${$1_CFLAGS_CPU_JVM} -DABI_ELFv2 -mcpu=power8 -mtune=power10"
-      fi
-    elif test "x$OPENJDK_TARGET_OS_ENV" = xbsd.freebsd; then
-      if test "x$FLAGS_CPU" = xppc64; then
-          $1_CFLAGS_CPU_JVM="${$1_CFLAGS_CPU_JVM} -DABI_ELFv2 -mcpu=powerpc64 -mtune=power5"
-      elif test "x$FLAGS_CPU" = xppc64le; then
-          # Little endian machine uses ELFv2 ABI.
-          # Use Power8, this is the first CPU to support PPC64 LE with ELFv2 ABI.
-          $1_CFLAGS_CPU_JVM="${$1_CFLAGS_CPU_JVM} -DABI_ELFv2 -mcpu=power8 -mtune=power10"
       fi
     fi
     if test "x$OPENJDK_TARGET_OS" = xaix; then
@@ -797,10 +780,6 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_CPU_DEP],
         # non-release builds.
         $1_CFLAGS_CPU_JVM="-homeparams"
       fi
-    elif test "x$OPENJDK_TARGET_OS_ENV" = xbsd.freebsd; then
-        if test "x$FLAGS_CPU" = xppc64; then
-            $1_CFLAGS_CPU_JVM="${$1_CFLAGS_CPU_JVM} -DABI_ELFv2 -mcpu=powerpc64 -mtune=power5"
-        fi
     fi
   fi
 
