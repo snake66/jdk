@@ -1028,9 +1028,19 @@ uid_t os::Bsd::get_process_uid(pid_t pid) {
   size_t size = sizeof kp;
   int mib_kern[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, pid};
   if (sysctl(mib_kern, 4, &kp, &size, nullptr, 0) == 0) {
+#if defined(__FreeBSD__)
+    if (size > 0 && kp.ki_pid == pid) {
+      return kp.ki_uid;
+    }
+#elif defined(__OpenBSD__)
+    if (size > 0 && kp.p_pid == pid) {
+      return kp.p_uid;
+    }
+#else
     if (size > 0 && kp.kp_proc.p_pid == pid) {
       return kp.kp_eproc.e_ucred.cr_uid;
     }
+#endif
   }
   return (uid_t)-1;
 }
