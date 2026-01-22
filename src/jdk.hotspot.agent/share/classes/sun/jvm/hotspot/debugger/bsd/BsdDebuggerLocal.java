@@ -296,6 +296,7 @@ public class BsdDebuggerLocal extends DebuggerBase implements BsdDebugger {
     public synchronized void attach(String execName, String coreName) {
         checkAttached();
         loadObjectList = new ArrayList<>();
+        threadList = new ArrayList<>();
         attach0(execName, coreName);
         attached = true;
         isCore = true;
