@@ -35,20 +35,8 @@
 #define amd64 1
 #endif
 
-#if defined(i386) && !defined(i586)
-#define i586 1
-#endif
-
-#ifdef i586
-#include "sun_jvm_hotspot_debugger_x86_X86ThreadContext.h"
-#endif
-
 #ifdef amd64
 #include "sun_jvm_hotspot_debugger_amd64_AMD64ThreadContext.h"
-#endif
-
-#if defined(sparc) || defined(sparcv9)
-#include "sun_jvm_hotspot_debugger_sparc_SPARCThreadContext.h"
 #endif
 
 #if defined(ppc64) || defined(ppc64le)
