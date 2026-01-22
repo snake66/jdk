@@ -103,7 +103,6 @@ struct ps_prochandle* get_proc_handle(JNIEnv* env, jobject this_obj) {
 extern "C"
 JNIEXPORT void JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_init0
   (JNIEnv *env, jclass cls) {
-  jclass listClass;
 
   if (init_libproc(getenv("LIBSAPROC_DEBUG") != NULL) != true) {
      THROW_NEW_DEBUGGER_EXCEPTION("can't initialize libproc");
@@ -127,8 +126,9 @@ JNIEXPORT void JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_init0
   getThreadForThreadId_ID = env->GetMethodID(cls, "getThreadForThreadId",
                                                      "(J)Lsun/jvm/hotspot/debugger/ThreadProxy;");
   CHECK_EXCEPTION;
+
   // java.util.List method we call
-  listClass = env->FindClass("java/util/List");
+  jclass listClass = env->FindClass("java/util/List");
   CHECK_EXCEPTION;
   listAdd_ID = env->GetMethodID(listClass, "add", "(Ljava/lang/Object;)Z");
   CHECK_EXCEPTION;
