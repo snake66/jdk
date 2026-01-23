@@ -309,6 +309,7 @@ public class BsdDebuggerLocal extends DebuggerBase implements BsdDebugger {
             return false;
         }
 
+        threadList = null;
         javaThreadList = null;
         loadObjectList = null;
 
