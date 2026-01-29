@@ -67,6 +67,9 @@ closeDescriptors(void)
 {
 #if defined(__FreeBSD__)
     closefrom(STDERR_FILENO + 1);
+#elif defined(_BSDONLY_SOURCE)
+    int err;
+    RESTARTABLE(closefrom(STDERR_FILENO + 1), err);
 #else
     DIR *dp;
     struct dirent *dirp;
