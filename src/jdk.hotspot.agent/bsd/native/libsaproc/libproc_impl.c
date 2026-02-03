@@ -507,7 +507,6 @@ lwpid_t get_lwp_id(struct ps_prochandle* ph, int index) {
   return 0;
 }
 
-#ifdef __APPLE__
 // set lwp_id of n'th thread
 bool set_lwp_id(struct ps_prochandle* ph, int index, lwpid_t lwpid) {
   int count = 0;
@@ -540,8 +539,6 @@ bool get_nth_lwp_regs(struct ps_prochandle* ph, int index, struct reg* regs) {
   }
   return false;
 }
-
-#endif // __APPLE__
 
 // get regs for a given lwp
 bool get_lwp_regs(struct ps_prochandle* ph, lwpid_t lwp_id, struct reg* regs) {

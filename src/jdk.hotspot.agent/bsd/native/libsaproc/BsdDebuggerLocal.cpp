@@ -30,6 +30,7 @@
 #include <cxxabi.h>
 #include <jni.h>
 #include "libproc.h"
+#include "libproc_impl.h"
 
 #if defined(x86_64) && !defined(amd64)
 #define amd64 1
@@ -70,13 +71,16 @@ public:
 };
 
 static jfieldID p_ps_prochandle_ID = 0;
-static jfieldID threadList_ID = 0;
 static jfieldID loadObjectList_ID = 0;
 
 static jmethodID createClosestSymbol_ID = 0;
 static jmethodID createLoadObject_ID = 0;
 static jmethodID getThreadForThreadId_ID = 0;
 static jmethodID listAdd_ID = 0;
+static jmethodID getJavaThreadsInfo_ID = 0;
+
+// indicator if thread id (lwpid_t) was set
+static bool _threads_filled = false;
 
 #define CHECK_EXCEPTION_(value) if (env->ExceptionCheck()) { return value; }
 #define CHECK_EXCEPTION if (env->ExceptionCheck()) { return;}
@@ -111,8 +115,6 @@ JNIEXPORT void JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_init0
   // fields we use
   p_ps_prochandle_ID = env->GetFieldID(cls, "p_ps_prochandle", "J");
   CHECK_EXCEPTION;
-  threadList_ID = env->GetFieldID(cls, "threadList", "Ljava/util/List;");
-  CHECK_EXCEPTION;
   loadObjectList_ID = env->GetFieldID(cls, "loadObjectList", "Ljava/util/List;");
   CHECK_EXCEPTION;
 
@@ -125,6 +127,8 @@ JNIEXPORT void JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_init0
   CHECK_EXCEPTION;
   getThreadForThreadId_ID = env->GetMethodID(cls, "getThreadForThreadId",
                                                      "(J)Lsun/jvm/hotspot/debugger/ThreadProxy;");
+  CHECK_EXCEPTION;
+  getJavaThreadsInfo_ID = env->GetMethodID(cls, "getJavaThreadsInfo", "()[J");
   CHECK_EXCEPTION;
 
   // java.util.List method we call
@@ -146,52 +150,74 @@ JNIEXPORT jint JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_getAdd
 
 }
 
+/** Only used for core file reading, for compatibility with the MacOS Java code.
+  */
+bool fill_java_threads(JNIEnv* env, jobject this_obj, struct ps_prochandle* ph) {
+  struct reg regs;
 
-static void fillThreadsAndLoadObjects(JNIEnv* env, jobject this_obj, struct ps_prochandle* ph) {
-  int n = 0, i = 0;
+  jlongArray thrinfos = (jlongArray)env->CallObjectMethod(this_obj, getJavaThreadsInfo_ID);
+  CHECK_EXCEPTION_(false);
+  int len = (int)env->GetArrayLength(thrinfos);
+  uint64_t* cinfos = (uint64_t *)env->GetLongArrayElements(thrinfos, NULL);
+  CHECK_EXCEPTION_(false);
+  int n = get_num_threads(ph);
+  for (int i = 0; i < n; i++) {
+    if (!get_nth_lwp_regs(ph, i, &regs)) {
+      //print_debug("Could not get regs of thread %d, already set!\n", i);
+      env->ReleaseLongArrayElements(thrinfos, (jlong*)cinfos, 0);
+      return false;
+    }
+    for (int j = 0; j < len; j += 3) {
+      lwpid_t  uid = cinfos[j];
+      uint64_t beg = cinfos[j + 1];
+      uint64_t end = cinfos[j + 2];
+#if defined(amd64)
+      if ((regs.r_rsp < end && regs.r_rsp >= beg) ||
+          (regs.r_rbp < end && regs.r_rbp >= beg)) {
+        set_lwp_id(ph, i, uid);
+        break;
+      }
+#elif defined(aarch64)
+      if ((regs.r_sp < end && regs.r_sp >= beg) ||
+          (regs.r_fp < end && regs.r_fp >= beg)) {
+        set_lwp_id(ph, i, uid);
+        break;
+      }
+#else
+#error UNSUPPORTED_ARCH
+#endif
+    }
+  }
+  env->ReleaseLongArrayElements(thrinfos, (jlong*)cinfos, 0);
+  CHECK_EXCEPTION_(false);
+  return true;
+}
 
-  // add threads
-  n = get_num_threads(ph);
-  for (i = 0; i < n; i++) {
-    jobject thread;
-    jobject threadList;
-    lwpid_t lwpid;
+static void fillLoadObjects(JNIEnv* env, jobject this_obj, struct ps_prochandle* ph) {
+  int n = get_num_libs(ph);
 
-    lwpid = get_lwp_id(ph, i);
-    thread = env->CallObjectMethod(this_obj, getThreadForThreadId_ID, (jlong)lwpid);
+  jobject loadObjectList = env->GetObjectField(this_obj, loadObjectList_ID);
+  CHECK_EXCEPTION;
+
+  for (int i = 0; i < n; i++) {
+    uintptr_t base, memsz;
+    const char* name;
+    jstring str;
+
+    get_lib_addr_range(ph, i, &base, &memsz);
+    name = get_lib_name(ph, i);
+
+    str = env->NewStringUTF(name);
     CHECK_EXCEPTION;
-    threadList = env->GetObjectField(this_obj, threadList_ID);
+    jobject loadObject = env->CallObjectMethod(this_obj, createLoadObject_ID, str, (jlong)memsz, (jlong)base);
     CHECK_EXCEPTION;
-    env->CallBooleanMethod(threadList, listAdd_ID, thread);
+    env->CallBooleanMethod(loadObjectList, listAdd_ID, loadObject);
     CHECK_EXCEPTION;
-    env->DeleteLocalRef(thread);
-    env->DeleteLocalRef(threadList);
+    env->DeleteLocalRef(str);
+    env->DeleteLocalRef(loadObject);
   }
 
-  // add load objects
-  n = get_num_libs(ph);
-  for (i = 0; i < n; i++) {
-     uintptr_t base, memsz;
-     const char* name;
-     jobject loadObject;
-     jobject loadObjectList;
-     jstring str;
-
-     get_lib_addr_range(ph, i, &base, &memsz);
-     name = get_lib_name(ph, i);
-
-     str = env->NewStringUTF(name);
-     CHECK_EXCEPTION;
-     loadObject = env->CallObjectMethod(this_obj, createLoadObject_ID, str, (jlong)memsz, (jlong)base);
-     CHECK_EXCEPTION;
-     loadObjectList = env->GetObjectField(this_obj, loadObjectList_ID);
-     CHECK_EXCEPTION;
-     env->CallBooleanMethod(loadObjectList, listAdd_ID, loadObject);
-     CHECK_EXCEPTION;
-     env->DeleteLocalRef(str);
-     env->DeleteLocalRef(loadObject);
-     env->DeleteLocalRef(loadObjectList);
-  }
+  env->DeleteLocalRef(loadObjectList);
 }
 
 /*
@@ -211,7 +237,7 @@ JNIEXPORT void JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_attach
     THROW_NEW_DEBUGGER_EXCEPTION(msg);
   }
   env->SetLongField(this_obj, p_ps_prochandle_ID, (jlong)(intptr_t)ph);
-  fillThreadsAndLoadObjects(env, this_obj, ph);
+  fillLoadObjects(env, this_obj, ph);
 }
 
 /*
@@ -232,7 +258,7 @@ JNIEXPORT void JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_attach
     THROW_NEW_DEBUGGER_EXCEPTION("Can't attach to the core file. For more information, export LIBSAPROC_DEBUG=1 and try again.");
   }
   env->SetLongField(this_obj, p_ps_prochandle_ID, (jlong)(intptr_t)ph);
-  fillThreadsAndLoadObjects(env, this_obj, ph);
+  fillLoadObjects(env, this_obj, ph);
 }
 
 /*
@@ -257,7 +283,6 @@ JNIEXPORT void JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_detach
 extern "C"
 JNIEXPORT jlong JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_lookupByName0
   (JNIEnv *env, jobject this_obj, jstring objectName, jstring symbolName) {
-  jlong addr;
   struct ps_prochandle* ph = get_proc_handle(env, this_obj);
   // Note, objectName is ignored, and may in fact be NULL.
   // lookup_symbol will always search all objects/libs
@@ -266,7 +291,7 @@ JNIEXPORT jlong JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_looku
   AutoJavaString symbolName_cstr(env, symbolName);
   CHECK_EXCEPTION_(0);
 
-  addr = (jlong) lookup_symbol(ph, NULL, symbolName_cstr);
+  jlong addr = (jlong) lookup_symbol(ph, NULL, symbolName_cstr);
   return addr;
 }
 
@@ -327,6 +352,19 @@ JNIEXPORT jlongArray JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_
   jlong *regs;
 
   struct ps_prochandle* ph = get_proc_handle(env, this_obj);
+  if (ph != NULL && ph->core != NULL) {
+    if (!_threads_filled)  {
+      fprintf(stdout, "[+] %s: Threads not filled...\n", __FUNCTION__);
+      fflush(stdout);
+      if (!fill_java_threads(env, this_obj, ph)) {
+        throw_new_debugger_exception(env, "Failed to fill in threads");
+        return 0;
+      } else {
+        _threads_filled = true;
+      }
+    }
+  }
+
   if (get_lwp_regs(ph, lwp_id, &gregs) != true) {
     // This is not considered fatal and does happen on occasion, usually with an
     // ESRCH error. The root cause is not fully understood, but by ignoring this error
