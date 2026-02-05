@@ -178,8 +178,8 @@ bool fill_java_threads(JNIEnv* env, jobject this_obj, struct ps_prochandle* ph) 
         break;
       }
 #elif defined(aarch64)
-      if ((regs.r_sp < end && regs.r_sp >= beg) ||
-          (regs.r_fp < end && regs.r_fp >= beg)) {
+      if ((regs.sp < end && regs.sp >= beg) ||
+          (regs.x[29] < end && regs.x[29] >= beg)) {
         set_lwp_id(ph, i, uid);
         break;
       }
