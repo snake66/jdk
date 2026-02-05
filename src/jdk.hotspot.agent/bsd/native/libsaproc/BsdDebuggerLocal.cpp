@@ -183,6 +183,11 @@ bool fill_java_threads(JNIEnv* env, jobject this_obj, struct ps_prochandle* ph) 
         set_lwp_id(ph, i, uid);
         break;
       }
+#elif defined(ppc64) || defined(ppc64le)
+      if (regs.fixreg[1] < end && regs.fixreg[1] >= beg) {
+        set_lwp_id(ph, i, uid);
+        break;
+      }
 #else
 #error UNSUPPORTED_ARCH
 #endif
