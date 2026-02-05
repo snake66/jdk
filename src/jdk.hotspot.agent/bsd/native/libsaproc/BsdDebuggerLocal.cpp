@@ -354,8 +354,6 @@ JNIEXPORT jlongArray JNICALL Java_sun_jvm_hotspot_debugger_bsd_BsdDebuggerLocal_
   struct ps_prochandle* ph = get_proc_handle(env, this_obj);
   if (ph != NULL && ph->core != NULL) {
     if (!_threads_filled)  {
-      fprintf(stdout, "[+] %s: Threads not filled...\n", __FUNCTION__);
-      fflush(stdout);
       if (!fill_java_threads(env, this_obj, ph)) {
         throw_new_debugger_exception(env, "Failed to fill in threads");
         return 0;
