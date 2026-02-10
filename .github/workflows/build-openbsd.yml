@@ -65,7 +65,6 @@ jobs:
 
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
-      VM_SCRIPT_DIR : ${{ github.workspace }}/../../_actions/vmactions/openbsd-vm/v1
 
     strategy:
       fail-fast: false
@@ -77,6 +76,17 @@ jobs:
             suffix: -debug
 
     steps:
+      - name: Setup Host for VM
+        run: |
+          echo "Starting storage:"
+          sudo df -h
+          echo "Removing Android SDKs and Tools"
+          sudo rm -rf /usr/local/lib/android
+          echo "Reduce swappiness"
+          sudo sysctl vm.swappiness=10
+          echo "Available storage:"
+          sudo df -h
+
       - name: 'Checkout the JDK source'
         uses: actions/checkout@v4
 
@@ -92,12 +102,19 @@ jobs:
         id: gtest
         uses: ./.github/actions/get-gtest
 
+      - name: 'Restore Cached VM Packages'
+        id: vm-packages-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: obsd-pkg-cache
+          key: packages-${{ inputs.platform }}-${{ inputs.vm-release }}-${{ inputs.vm-arch }}-${{ hashFiles('./obsd-pkg-cache/*.tgz') }}
+
       - name: 'Start OpenBSD VM'
         uses: vmactions/openbsd-vm@v1
         with:
           release: ${{ inputs.vm-release }}
           arch: ${{ inputs.vm-arch }}
-          mem: 12288
+          mem: 11264
           cpu: 4
           envs: 'MYTOKEN'
           usesh: true
@@ -110,6 +127,9 @@ jobs:
       - name: 'Install toolchain and dependencies in VM'
         shell: openbsd {0}
         run: |
+          export PKG_CACHE=$GITHUB_WORKSPACE/obsd-pkg-cache
+          mkdir -p ${PKG_CACHE}
+          export PKG_PATH="${PKG_CACHE}:https://cdn.openbsd.org/%m"
           until pkg_add jdk%25 metaauto autoconf%2.69 gtar-- zip unzip-- cups-libs bash ggrep gmake dwz libiconv harfbuzz jpeg lcms2 png giflib; do
             echo Retrying in 10 seconds; sleep 10;
           done
@@ -154,6 +174,21 @@ jobs:
           platform: ${{ inputs.platform }}
           vm-name: 'openbsd'
           debug-suffix: '${{ matrix.suffix }}'
+
+      - name: 'Check Memory, Swap and Disk Usage'
+        run: |
+          echo "Memory and swap:"
+          sudo free -h
+          echo
+          echo "Available storage:"
+          sudo df -h
+
+      - name: 'Save VM Packages'
+        uses: actions/cache/save@v4
+        with:
+          path: obsd-pkg-cache
+          key: packages-${{ inputs.platform }}-${{ inputs.vm-release }}-${{ inputs.vm-arch }}-${{ hashFiles('./obsd-pkg-cache/*.tgz') }}
+        if: ${{ matrix.debug-level == 'release' }}
 
       - name: 'Upload bundles'
         uses: ./.github/actions/upload-bundles

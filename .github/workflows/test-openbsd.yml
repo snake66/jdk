@@ -123,6 +123,17 @@ jobs:
             debug-suffix: ${{ inputs.debug-suffix }}
 
     steps:
+      - name: Setup Host for VM
+        run: |
+          echo "Starting storage:"
+          sudo df -h
+          echo "Removing Android SDKs and Tools"
+          sudo rm -rf /usr/local/lib/android
+          echo "Reduce swappiness"
+          sudo sysctl vm.swappiness=10
+          echo "Available storage:"
+          sudo df -h
+
       - name: 'Checkout the JDK source'
         uses: actions/checkout@v4
 
@@ -162,19 +173,29 @@ jobs:
             echo "extra-problem-lists=EXTRA_PROBLEM_LISTS=${{ steps.path.outputs.static-hotspot-problemlist-path }}%20${{ steps.path.outputs.static-jdk-problemlist-path }}%20${{ steps.path.outputs.static-langtools-problemlist-path }}%20${{ steps.path.outputs.static-lib-test-problemlist-path }}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Restore Cached VM Packages
+        id: vm-packages-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: obsd-pkg-cache
+          key: packages-${{ inputs.platform }}-${{ inputs.vm-release }}-${{ inputs.vm-arch }}-${{ hashFiles('./obsd-pkg-cache/*.tgz') }}
+
       - name: 'Run Tests in OpenBSD VM'
         id: run-tests
         uses: vmactions/openbsd-vm@v1
         with:
           release: ${{ inputs.vm-release }}
           arch: ${{ inputs.vm-arch }}
-          mem: 12288
+          mem: 11264
           cpu: 4
           envs: 'MYTOKEN'
           usesh: true
           prepare: |
             mount -u -o wxallowed /home
             usermod -L pbuild root
+            export PKG_CACHE=$GITHUB_WORKSPACE/obsd-pkg-cache
+            mkdir -p ${PKG_CACHE}
+            export PKG_PATH="${PKG_CACHE}:https://cdn.openbsd.org/%m"
             until pkg_add jdk%25 gtar-- zip unzip-- cups-libs bash ggrep gmake dwz libiconv harfbuzz jpeg lcms2 png giflib; do
               echo Retrying in 10 seconds; sleep 10;
             done
@@ -192,6 +213,14 @@ jobs:
             ${{ steps.extra-options.outputs.compile-jdk }}
             JTREG='JAVA_OPTIONS=-XX:-CreateCoredumpOnCrash;VERBOSE=fail,error,time;KEYWORDS=!headful;${{ steps.extra-options.outputs.extra-problem-lists }};${{ matrix.test-timeout-factor }}'
             && bash ./.github/scripts/gen-test-summary.sh "$GITHUB_STEP_SUMMARY" "$GITHUB_OUTPUT"
+
+      - name: 'Check Memory, Swap and Disk Usage'
+        run: |
+          echo "Memory and swap:"
+          sudo free -h
+          echo
+          echo "Available storage:"
+          sudo df -h
 
         # This is a separate step, since if the markdown from a step gets bigger than
         # 1024 kB it is skipped, but then the short summary above is still generated
