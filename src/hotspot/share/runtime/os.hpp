@@ -140,7 +140,7 @@ enum ThreadPriority {        // JLS 20.20.1-3
   CriticalPriority = 11      // Critical thread priority
 };
 
-#ifdef MACOS_AARCH64
+#if defined(_ALLBSD_SOURCE) && defined(AARCH64)
 enum WXMode {
   WXWrite = 0,
   WXExec = 1,
@@ -148,7 +148,7 @@ enum WXMode {
 };
 
 extern WXMode DefaultWXWriteMode;
-#endif // MACOS_AARCH64
+#endif // _ALLBSD_SOURCE && AARCH64
 
 // Executable parameter flag for os::commit_memory() and
 // os::commit_memory_or_exit().

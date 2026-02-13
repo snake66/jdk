@@ -97,9 +97,9 @@
 
 #define SPELL_REG_SP "sp"
 
-#ifdef __APPLE__
 WXMode DefaultWXWriteMode;
 
+#ifdef __APPLE__
 // see darwin-xnu/osfmk/mach/arm/_structs.h
 
 // 10.5 UNIX03 member name prefixes
