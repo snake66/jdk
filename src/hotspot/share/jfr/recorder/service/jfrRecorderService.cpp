@@ -751,7 +751,7 @@ static void emit_leakprofiler_events(bool emit_all, bool skip_bfs, JavaThread* j
     assert(CrashOnOutOfMemoryError, "invariant");
     return;
   }
-  MACOS_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, jt));
+  BSD_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, jt));
   ThreadInVMfromNative transition(jt);
   // Since we are not requesting path-to-gc-roots, i.e., reference chains, we need not issue a VM_Operation.
   // Therefore, we can let the requesting thread process the request directly, since it already holds the requisite lock.
@@ -764,7 +764,7 @@ void JfrRecorderService::transition_and_post_leakprofiler_emit_msg(JavaThread* j
   assert(!JfrRotationLock::is_owner(), "invariant");
   // Transition to _thread_in_VM and post a synchronous message to the JFR Recorder Thread
   // for it to process our enqueued request, which includes paths-to-gc-roots, i.e., reference chains.
-  MACOS_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, jt));
+  BSD_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, jt));
   ThreadInVMfromNative transition(jt);
   _post_box.post(MSG_EMIT_LEAKP_REFCHAINS);
 }
@@ -844,7 +844,7 @@ void JfrRecorderService::emit_leakprofiler_events() {
   assert(_queue->is_nonempty(), "invariant");
 
   {
-    MACOS_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, jt));
+    BSD_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, jt));
     ThreadInVMfromNative transition(jt);
     while (_queue->is_nonempty()) {
       const JfrLeakProfilerEmitRequest& request = dequeue();
