@@ -65,6 +65,12 @@ static char *skipNonWhitespace(char *p) {
 static int
 closeDescriptors(void)
 {
+#if defined(__FreeBSD__)
+    closefrom(STDERR_FILENO + 1);
+#elif defined(_BSDONLY_SOURCE)
+    int err;
+    RESTARTABLE(closefrom(STDERR_FILENO + 1), err);
+#else
     DIR *dp;
     struct dirent *dirp;
     /* leave out standard input/output/error descriptors */
@@ -109,6 +115,7 @@ closeDescriptors(void)
 
     (void)closedir(dp);
 
+#endif
     return 1; // success
 }
 
