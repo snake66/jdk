@@ -1456,7 +1456,7 @@ struct iterate_data {
 static int iter_callback(struct dl_phdr_info *info, size_t size, void* d) {
   struct iterate_data *data = (struct iterate_data *)d;
 
-  if(data->callback(info->dlpi_name, (address)info->dlpi_addr, (address)0, data->param))
+  if(data->callback(info->dlpi_name, (address)info->dlpi_addr, (address)nullptr, data->param))
     return 1;
 
   return 0;
