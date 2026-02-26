@@ -28,21 +28,29 @@
 //
 // Declare Bsd specific flags. They are not available on other platforms.
 //
-#define RUNTIME_OS_FLAGS(develop,     \
-                         develop_pd,  \
-                         product,     \
-                         product_pd,  \
-                         range,       \
-                         constraint)  \
-                                                    \
-  product(bool, UseHugeTLBFS, false,                \
-          "Use MAP_HUGETLB for large pages")        \
-                                                    \
-  product(bool, UseSHM, false,                      \
-          "Use SYSV shared memory for large pages") \
-  AARCH64_ONLY(develop(bool, AssertWXAtThreadSync, true,               \
-          "Conservatively check W^X thread state at possible safepoint" \
-          "or handshake"))
+#ifdef AARCH64
+#define RUNTIME_OS_FLAGS(develop,                                       \
+                         develop_pd,                                    \
+                         product,                                       \
+                         product_pd,                                    \
+                         range,                                         \
+                         constraint)                                    \
+                                                                        \
+  develop(bool, TraceWXHealing, false,                                  \
+          "track occurrences of W^X mode healing")                      \
+  develop(bool, UseOldWX, false,                                        \
+          "Choose old W^X implementation.")                             \
+  product(bool, StressWXHealing, false, DIAGNOSTIC,                     \
+          "Stress W xor X healing on MacOS")
+
+#else
+#define RUNTIME_OS_FLAGS(develop,                                       \
+                         develop_pd,                                    \
+                         product,                                       \
+                         product_pd,                                    \
+                         range,                                         \
+                         constraint)
+#endif
 
 // end of RUNTIME_OS_FLAGS
 
