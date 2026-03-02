@@ -83,8 +83,8 @@ public:
 class ThreadWXEnable  {
   WXMode _new_mode;
 public:
-  ThreadWXEnable(WXMode new_mode, Thread*) :
-    _new_mode(new_mode)
+  ThreadWXEnable(WXMode * new_mode, Thread*) :
+    _new_mode(*new_mode)
   {
     if (_new_mode == WXExec) {
       // We are going to execute some code that has been potentially
@@ -93,6 +93,12 @@ public:
                             "isb\tsy" : : : "memory");
     }
   }
+
+  ThreadWXEnable(WXMode new_mode, Thread * t)
+  {
+    ThreadWXEnable(&new_mode, t);
+  }
+
   ~ThreadWXEnable() {
     if (_new_mode == WXWrite) {
       // We may have modified some code that is going to be executed
