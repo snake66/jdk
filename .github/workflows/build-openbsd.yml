@@ -96,7 +96,7 @@ jobs:
 
       - name: 'Set the BootJDK path'
         id: bootjdk
-        run: echo 'path=/usr/local/jdk-25' >> $GITHUB_OUTPUT
+        run: echo 'path=/usr/local/jdk-26' >> $GITHUB_OUTPUT
 
       - name: 'Get JTReg'
         id: jtreg
