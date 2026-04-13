@@ -96,7 +96,7 @@ jobs:
 
       - name: 'Set the BootJDK path'
         id: bootjdk
-        run: echo 'path=/usr/local/openjdk25' >> $GITHUB_OUTPUT
+        run: echo 'path=/usr/local/openjdk26' >> $GITHUB_OUTPUT
 
       - name: 'Get JTReg'
         id: jtreg
@@ -127,7 +127,7 @@ jobs:
           echo 'FreeBSD: { url: "pkg+https://pkg.FreeBSD.org/${ABI}/latest" }' > /usr/local/etc/pkg/repos/FreeBSD.conf
           pkg update -f -q
           pkg upgrade -y
-          pkg install -y openjdk25 autoconf automake pkgconf gnugrep gtar zip unzip cups bash gmake dwz libiconv harfbuzz lcms2 png giflib jpeg-turbo gsed
+          pkg install -y openjdk26 autoconf automake pkgconf gnugrep gtar zip unzip cups bash gmake dwz libiconv harfbuzz lcms2 png giflib jpeg-turbo gsed
 
       - name: 'Configure in VM'
         shell: freebsd {0}
