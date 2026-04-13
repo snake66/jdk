@@ -10261,7 +10261,7 @@ class StubGenerator: public StubCodeGenerator {
     return start;
   }
 
-#if (defined (LINUX) || defined(_BSDONLY_SOURCE)) && !defined (__ARM_FEATURE_ATOMICS)
+#if (defined (LINUX) || defined (_BSDONLY_SOURCE)) && !defined (__ARM_FEATURE_ATOMICS)
 
   // ARMv8.1 LSE versions of the atomic stubs used by AtomicAccess::PlatformXX.
   //
@@ -11727,7 +11727,7 @@ class StubGenerator: public StubCodeGenerator {
     StubRoutines::_upcall_stub_exception_handler = generate_upcall_stub_exception_handler();
     StubRoutines::_upcall_stub_load_target = generate_upcall_stub_load_target();
 
-#if (defined (LINUX) || defined(_BSDONLY_SOURCE)) && !defined (__ARM_FEATURE_ATOMICS)
+#if (defined (LINUX) || defined (_BSDONLY_SOURCE)) && !defined (__ARM_FEATURE_ATOMICS)
 
     generate_atomic_entry_points();
 
