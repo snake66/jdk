@@ -442,8 +442,8 @@ static int util_posix_fallocate(int fd, off_t offset, off_t len) {
   if (fstat(fd, &s) == -1)
     return -1;
 
-  if (s.st_size < offset+len) {
-    return ftruncate(fd, offset+len);
+  if (s.st_size < offset + len) {
+    return ftruncate(fd, offset + len);
   }
   return 0;
 #else
@@ -652,14 +652,14 @@ void os::Posix::print_rlimit_info(outputStream* st) {
   // maximum size of files that the process may create
   print_rlimit(st, ", FSIZE", RLIMIT_FSIZE, true);
 
-#if defined(LINUX) || defined(__APPLE__) || defined(_ALLBSD_SOURCE)
+#if defined(LINUX) || defined(_ALLBSD_SOURCE)
   // maximum number of bytes of memory that may be locked into RAM
   // (rounded down to the nearest  multiple of system pagesize)
   print_rlimit(st, ", MEMLOCK", RLIMIT_MEMLOCK, true);
 #endif
 
-  // MacOS; The maximum size (in bytes) to which a process's resident set size may grow.
-#if defined(__APPLE__) || defined(_ALLBSD_SOURCE)
+#if defined(_ALLBSD_SOURCE)
+  // MacOS and BSD; The maximum size (in bytes) to which a process's resident set size may grow.
   print_rlimit(st, ", RSS", RLIMIT_RSS, true);
 #endif
 
