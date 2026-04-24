@@ -245,7 +245,7 @@ bool CPUPerformanceInterface::CPUPerformance::initialize() {
 
   // For the CPU load total
   if (get_cpu_ticks(&_cpus[_num_procs], -1) != OS_OK) {
-    FREE_C_HEAP_ARRAY(CPUTicks, _cpus);
+    FREE_C_HEAP_ARRAY(_cpus);
     _cpus = nullptr;
     return false;
   }
@@ -257,7 +257,7 @@ bool CPUPerformanceInterface::CPUPerformance::initialize() {
 
   // For JVM load
   if (get_jvm_ticks(&_jvm_ticks) != OS_OK) {
-    FREE_C_HEAP_ARRAY(CPUTicks, _cpus);
+    FREE_C_HEAP_ARRAY(_cpus);
     _cpus = nullptr;
     return false;
   }
@@ -266,7 +266,7 @@ bool CPUPerformanceInterface::CPUPerformance::initialize() {
 
 CPUPerformanceInterface::CPUPerformance::~CPUPerformance() {
   if (_cpus != nullptr) {
-    FREE_C_HEAP_ARRAY(CPUTicks, _cpus);
+    FREE_C_HEAP_ARRAY(_cpus);
   }
 }
 
@@ -323,12 +323,12 @@ int CPUPerformanceInterface::CPUPerformance::get_cpu_ticks(CPUTicks *ticks, int 
     long *allcpus = NEW_C_HEAP_ARRAY(long, CPUSTATES * _num_procs, mtInternal);
 
     if (sysctlbyname("kern.cp_times", allcpus, &alllength, nullptr, 0) == -1) {
-      FREE_C_HEAP_ARRAY(long, allcpus);
+      FREE_C_HEAP_ARRAY(allcpus);
       return OS_ERR;
     }
 
     memcpy(cpu_load_info, &allcpus[which_logical_cpu * CPUSTATES], sizeof(long) * CPUSTATES);
-    FREE_C_HEAP_ARRAY(long, allcpus);
+    FREE_C_HEAP_ARRAY(allcpus);
 #else
     char name[24];
     os::snprintf_checked(name, sizeof(name), "kern.cp_time.%d", which_logical_cpu);
@@ -674,7 +674,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
   }
 
   if (sysctl(mib, miblen, lproc, &length, nullptr, 0) == -1) {
-    FREE_C_HEAP_ARRAY(struct kinfo_proc, lproc);
+    FREE_C_HEAP_ARRAY(lproc);
     return OS_ERR;
   }
 
@@ -729,7 +729,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
     process_count++;
   }
 
-  FREE_C_HEAP_ARRAY(struct kinfo_proc, lproc);
+  FREE_C_HEAP_ARRAY(lproc);
   *no_of_sys_processes = process_count;
   *system_processes = next;
 
