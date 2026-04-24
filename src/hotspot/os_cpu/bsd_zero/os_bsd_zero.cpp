@@ -53,7 +53,6 @@
 
 #if !defined(__APPLE__) && !defined(__NetBSD__)
 #include <pthread.h>
-# include <pthread_np.h> /* For pthread_attr_get_np */
 #endif
 
 address os::current_stack_pointer() {

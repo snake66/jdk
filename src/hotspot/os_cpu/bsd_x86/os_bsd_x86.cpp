@@ -55,6 +55,8 @@
 // put OS-includes here
 # include <sys/types.h>
 # include <sys/mman.h>
+# include <sys/sysctl.h>
+# include <pthread.h>
 # include <signal.h>
 # include <errno.h>
 # include <dlfcn.h>
@@ -82,19 +84,6 @@
 #define PROC_STACKGAP_DISABLE	0x0002
 #endif
 #endif /* __FreeBSD__ */
-
-#if !defined(__APPLE__) && !defined(__NetBSD__)
-# include <pthread_np.h>
-#endif
-
-// needed by current_stack_base_and_size() workaround for Mavericks
-#if defined(__APPLE__)
-# include <errno.h>
-# include <sys/types.h>
-# include <sys/sysctl.h>
-# define DEFAULT_MAIN_THREAD_STACK_PAGES 2048
-# define OS_X_10_9_0_KERNEL_MAJOR_VERSION 13
-#endif
 
 #define SPELL_REG_SP "rsp"
 #define SPELL_REG_FP "rbp"
