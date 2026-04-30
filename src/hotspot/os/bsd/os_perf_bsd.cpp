@@ -753,7 +753,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
   mib[5] = length / sizeof(struct kinfo_proc);
 
   if (sysctl(mib, miblen, lproc, &length, nullptr, 0) == -1) {
-    FREE_C_HEAP_ARRAY(struct kinfo_proc, lproc);
+    FREE_C_HEAP_ARRAY(lproc);
     return OS_ERR;
   }
 
@@ -780,12 +780,12 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
 
     if (sysctl(pmib, pmiblen, argv, &length, nullptr, 0) == -1) {
       ret = OS_ERR;
-      FREE_C_HEAP_ARRAY(char*, argv);
+      FREE_C_HEAP_ARRAY(argv);
       break;
     }
 
     if (argv[0] == nullptr) {
-      FREE_C_HEAP_ARRAY(char*, argv);
+      FREE_C_HEAP_ARRAY(argv);
       continue;
     }
 
@@ -802,10 +802,10 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
       process_count++;
     }
 
-    FREE_C_HEAP_ARRAY(char*, argv);
+    FREE_C_HEAP_ARRAY(argv);
   }
 
-  FREE_C_HEAP_ARRAY(struct kinfo_proc, lproc);
+  FREE_C_HEAP_ARRAY(lproc);
 
   if (ret != OS_OK) {
     SystemProcess* current = next;
@@ -840,7 +840,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
   mib[5] = length / sizeof(struct kinfo_proc2);
 
   if (sysctl(mib, miblen, lproc, &length, nullptr, 0) == -1) {
-    FREE_C_HEAP_ARRAY(struct kinfo_proc2, lproc);
+    FREE_C_HEAP_ARRAY(lproc);
     return OS_ERR;
   }
 
@@ -898,7 +898,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
     process_count++;
   }
 
-  FREE_C_HEAP_ARRAY(struct kinfo_proc2, lproc);
+  FREE_C_HEAP_ARRAY(lproc);
   *no_of_sys_processes = process_count;
   *system_processes = next;
 

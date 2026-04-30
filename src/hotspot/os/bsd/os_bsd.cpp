@@ -2711,7 +2711,7 @@ jlong os::thread_cpu_time(Thread *thread, bool user_sys_cpu_time) {
   mib[5] = num_threads;
 
   if (sysctl(mib, miblen, ki, &length, nullptr, 0) < 0) {
-    FREE_C_HEAP_ARRAY(struct kinfo_proc, ki);
+    FREE_C_HEAP_ARRAY(ki);
     return -1;
   }
 
@@ -2725,11 +2725,11 @@ jlong os::thread_cpu_time(Thread *thread, bool user_sys_cpu_time) {
         nanos += (jlong)ki[i].p_ustime_sec * NANOSECS_PER_SEC;
         nanos += (jlong)ki[i].p_ustime_usec * 1000;
       }
-      FREE_C_HEAP_ARRAY(struct kinfo_proc, ki);
+      FREE_C_HEAP_ARRAY(ki);
       return nanos;
     }
   }
-  FREE_C_HEAP_ARRAY(struct kinfo_proc, ki);
+  FREE_C_HEAP_ARRAY(ki);
   return -1;
 #else /* !OpenBSD */
   if (user_sys_cpu_time && Bsd::_getcpuclockid != nullptr) {
