@@ -493,7 +493,7 @@ class DwarfFile : public ElfFile {
     bool grow();
     void free() {
       if (_entries != nullptr) {
-        FREE_C_HEAP_ARRAY(ArangesEntry, _entries);
+        FREE_C_HEAP_ARRAY(_entries);
         _entries = nullptr;
       }
     }

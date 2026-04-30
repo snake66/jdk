@@ -245,7 +245,7 @@ bool CPUPerformanceInterface::CPUPerformance::initialize() {
 
   // For the CPU load total
   if (get_cpu_ticks(&_cpus[_num_procs], -1) != OS_OK) {
-    FREE_C_HEAP_ARRAY(CPUTicks, _cpus);
+    FREE_C_HEAP_ARRAY(_cpus);
     _cpus = nullptr;
     return false;
   }
@@ -257,7 +257,7 @@ bool CPUPerformanceInterface::CPUPerformance::initialize() {
 
   // For JVM load
   if (get_jvm_ticks(&_jvm_ticks) != OS_OK) {
-    FREE_C_HEAP_ARRAY(CPUTicks, _cpus);
+    FREE_C_HEAP_ARRAY(_cpus);
     _cpus = nullptr;
     return false;
   }
@@ -266,7 +266,7 @@ bool CPUPerformanceInterface::CPUPerformance::initialize() {
 
 CPUPerformanceInterface::CPUPerformance::~CPUPerformance() {
   if (_cpus != nullptr) {
-    FREE_C_HEAP_ARRAY(CPUTicks, _cpus);
+    FREE_C_HEAP_ARRAY(_cpus);
   }
 }
 
@@ -323,12 +323,12 @@ int CPUPerformanceInterface::CPUPerformance::get_cpu_ticks(CPUTicks *ticks, int 
     long *allcpus = NEW_C_HEAP_ARRAY(long, CPUSTATES * _num_procs, mtInternal);
 
     if (sysctlbyname("kern.cp_times", allcpus, &alllength, nullptr, 0) == -1) {
-      FREE_C_HEAP_ARRAY(long, allcpus);
+      FREE_C_HEAP_ARRAY(allcpus);
       return OS_ERR;
     }
 
     memcpy(cpu_load_info, &allcpus[which_logical_cpu * CPUSTATES], sizeof(long) * CPUSTATES);
-    FREE_C_HEAP_ARRAY(long, allcpus);
+    FREE_C_HEAP_ARRAY(allcpus);
 #else
     char name[24];
     os::snprintf_checked(name, sizeof(name), "kern.cp_time.%d", which_logical_cpu);
@@ -619,7 +619,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
     pids_bytes = proc_listpids(PROC_ALL_PIDS, 0, pids, pids_bytes);
     if (pids_bytes <= 0) {
        // couldn't fit buffer, retry.
-      FREE_RESOURCE_ARRAY(pid_t, pids, pid_count);
+      FREE_RESOURCE_ARRAY(pids, pid_count);
       pids = nullptr;
       try_count++;
       if (try_count > 3) {
@@ -674,7 +674,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
   }
 
   if (sysctl(mib, miblen, lproc, &length, nullptr, 0) == -1) {
-    FREE_C_HEAP_ARRAY(struct kinfo_proc, lproc);
+    FREE_C_HEAP_ARRAY(lproc);
     return OS_ERR;
   }
 
@@ -729,7 +729,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
     process_count++;
   }
 
-  FREE_C_HEAP_ARRAY(struct kinfo_proc, lproc);
+  FREE_C_HEAP_ARRAY(lproc);
   *no_of_sys_processes = process_count;
   *system_processes = next;
 
@@ -753,7 +753,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
   mib[5] = length / sizeof(struct kinfo_proc);
 
   if (sysctl(mib, miblen, lproc, &length, nullptr, 0) == -1) {
-    FREE_C_HEAP_ARRAY(struct kinfo_proc, lproc);
+    FREE_C_HEAP_ARRAY(lproc);
     return OS_ERR;
   }
 
@@ -780,12 +780,12 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
 
     if (sysctl(pmib, pmiblen, argv, &length, nullptr, 0) == -1) {
       ret = OS_ERR;
-      FREE_C_HEAP_ARRAY(char*, argv);
+      FREE_C_HEAP_ARRAY(argv);
       break;
     }
 
     if (argv[0] == nullptr) {
-      FREE_C_HEAP_ARRAY(char*, argv);
+      FREE_C_HEAP_ARRAY(argv);
       continue;
     }
 
@@ -802,10 +802,10 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
       process_count++;
     }
 
-    FREE_C_HEAP_ARRAY(char*, argv);
+    FREE_C_HEAP_ARRAY(argv);
   }
 
-  FREE_C_HEAP_ARRAY(struct kinfo_proc, lproc);
+  FREE_C_HEAP_ARRAY(lproc);
 
   if (ret != OS_OK) {
     SystemProcess* current = next;
@@ -840,7 +840,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
   mib[5] = length / sizeof(struct kinfo_proc2);
 
   if (sysctl(mib, miblen, lproc, &length, nullptr, 0) == -1) {
-    FREE_C_HEAP_ARRAY(struct kinfo_proc2, lproc);
+    FREE_C_HEAP_ARRAY(lproc);
     return OS_ERR;
   }
 
@@ -898,7 +898,7 @@ int SystemProcessInterface::SystemProcesses::system_processes(SystemProcess** sy
     process_count++;
   }
 
-  FREE_C_HEAP_ARRAY(struct kinfo_proc2, lproc);
+  FREE_C_HEAP_ARRAY(lproc);
   *no_of_sys_processes = process_count;
   *system_processes = next;
 
@@ -946,12 +946,12 @@ CPUInformationInterface::~CPUInformationInterface() {
   if (_cpu_info != nullptr) {
     if (_cpu_info->cpu_name() != nullptr) {
       const char* cpu_name = _cpu_info->cpu_name();
-      FREE_C_HEAP_ARRAY(char, cpu_name);
+      FREE_C_HEAP_ARRAY(cpu_name);
       _cpu_info->set_cpu_name(nullptr);
     }
     if (_cpu_info->cpu_description() != nullptr) {
       const char* cpu_desc = _cpu_info->cpu_description();
-      FREE_C_HEAP_ARRAY(char, cpu_desc);
+      FREE_C_HEAP_ARRAY(cpu_desc);
       _cpu_info->set_cpu_description(nullptr);
     }
     delete _cpu_info;

@@ -91,10 +91,6 @@
 # endif
 #endif /* __FreeBSD__ */
 
-#if !defined(__APPLE__) && !defined(__NetBSD__)
-# include <pthread_np.h>
-#endif
-
 #define SPELL_REG_SP "sp"
 
 WXMode DefaultWXWriteMode;
