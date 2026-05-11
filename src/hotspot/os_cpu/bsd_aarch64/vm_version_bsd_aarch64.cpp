@@ -473,6 +473,16 @@ lookup_cpu(int &_cpu, int &_model, int &_variant, int &_revision) {
 }
 #endif // __OpenBSD__
 
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
+static uint64_t check_feature(uint64_t hwcap, uint64_t feature_bit_mask, uint64_t hwcap_bitmask) {
+  if (hwcap & hwcap_bitmask) {
+    return feature_bit_mask;
+  } else {
+    return 0;
+  }
+}
+#endif
+
 void VM_Version::get_os_cpu_info() {
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
 
@@ -488,40 +498,27 @@ void VM_Version::get_os_cpu_info() {
   elf_aux_info(AT_HWCAP, &auxv, sizeof(auxv));
   elf_aux_info(AT_HWCAP2, &auxv2, sizeof(auxv2));
 
-  static_assert(BIT_MASK(CPU_FP)      == HWCAP_FP,      "Flag CPU_FP must follow HWCAP");
-  static_assert(BIT_MASK(CPU_ASIMD)   == HWCAP_ASIMD,   "Flag CPU_ASIMD must follow HWCAP");
-  static_assert(BIT_MASK(CPU_EVTSTRM) == HWCAP_EVTSTRM, "Flag CPU_EVTSTRM must follow HWCAP");
-  static_assert(BIT_MASK(CPU_AES)     == HWCAP_AES,     "Flag CPU_AES must follow HWCAP");
-  static_assert(BIT_MASK(CPU_PMULL)   == HWCAP_PMULL,   "Flag CPU_PMULL must follow HWCAP");
-  static_assert(BIT_MASK(CPU_SHA1)    == HWCAP_SHA1,    "Flag CPU_SHA1 must follow HWCAP");
-  static_assert(BIT_MASK(CPU_SHA2)    == HWCAP_SHA2,    "Flag CPU_SHA2 must follow HWCAP");
-  static_assert(BIT_MASK(CPU_CRC32)   == HWCAP_CRC32,   "Flag CPU_CRC32 must follow HWCAP");
-  static_assert(BIT_MASK(CPU_LSE)     == HWCAP_ATOMICS, "Flag CPU_LSE must follow HWCAP");
-  static_assert(BIT_MASK(CPU_DCPOP)   == HWCAP_DCPOP,   "Flag CPU_DCPOP must follow HWCAP");
-  static_assert(BIT_MASK(CPU_SHA3)    == HWCAP_SHA3,    "Flag CPU_SHA3 must follow HWCAP");
-  static_assert(BIT_MASK(CPU_SHA512)  == HWCAP_SHA512,  "Flag CPU_SHA512 must follow HWCAP");
-  static_assert(BIT_MASK(CPU_SVE)     == HWCAP_SVE,     "Flag CPU_SVE must follow HWCAP");
-  static_assert(BIT_MASK(CPU_PACA)    == HWCAP_PACA,    "Flag CPU_PACA must follow HWCAP");
-  static_assert(BIT_MASK(CPU_FPHP)    == HWCAP_FPHP,    "Flag CPU_FPHP must follow HWCAP");
-  static_assert(BIT_MASK(CPU_ASIMDHP) == HWCAP_ASIMDHP, "Flag CPU_ASIMDHP must follow HWCAP");
-  _features = auxv & (
-      HWCAP_FP      |
-      HWCAP_ASIMD   |
-      HWCAP_EVTSTRM |
-      HWCAP_AES     |
-      HWCAP_PMULL   |
-      HWCAP_SHA1    |
-      HWCAP_SHA2    |
-      HWCAP_CRC32   |
-      HWCAP_ATOMICS |
-      HWCAP_DCPOP   |
-      HWCAP_SHA3    |
-      HWCAP_SHA512  |
-      HWCAP_SVE     |
-      HWCAP_SB      |
-      HWCAP_PACA    |
-      HWCAP_FPHP    |
-      HWCAP_ASIMDHP);
+  _features =
+      check_feature(auxv,  BIT_MASK(CPU_FP),         HWCAP_FP) |
+      check_feature(auxv,  BIT_MASK(CPU_ASIMD),      HWCAP_ASIMD) |
+      check_feature(auxv,  BIT_MASK(CPU_EVTSTRM),    HWCAP_EVTSTRM) |
+      check_feature(auxv,  BIT_MASK(CPU_AES),        HWCAP_AES) |
+      check_feature(auxv,  BIT_MASK(CPU_PMULL),      HWCAP_PMULL) |
+      check_feature(auxv,  BIT_MASK(CPU_SHA1),       HWCAP_SHA1) |
+      check_feature(auxv,  BIT_MASK(CPU_SHA2),       HWCAP_SHA2) |
+      check_feature(auxv,  BIT_MASK(CPU_CRC32),      HWCAP_CRC32) |
+      check_feature(auxv,  BIT_MASK(CPU_LSE),        HWCAP_ATOMICS) |
+      check_feature(auxv,  BIT_MASK(CPU_DCPOP),      HWCAP_DCPOP) |
+      check_feature(auxv,  BIT_MASK(CPU_SHA3),       HWCAP_SHA3) |
+      check_feature(auxv,  BIT_MASK(CPU_SHA512),     HWCAP_SHA512) |
+      check_feature(auxv,  BIT_MASK(CPU_SVE),        HWCAP_SVE) |
+      check_feature(auxv,  BIT_MASK(CPU_PACA),       HWCAP_PACA) |
+      check_feature(auxv,  BIT_MASK(CPU_FPHP),       HWCAP_FPHP) |
+      check_feature(auxv,  BIT_MASK(CPU_ASIMDHP),    HWCAP_ASIMDHP) |
+      check_feature(auxv2, BIT_MASK(CPU_SVE2),       HWCAP2_SVE2) |
+      check_feature(auxv2, BIT_MASK(CPU_SVEBITPERM), HWCAP2_SVEBITPERM) |
+      check_feature(auxv2, BIT_MASK(CPU_ECV),        HWCAP2_ECV) |
+      check_feature(auxv2, BIT_MASK(CPU_WFXT),       HWCAP2_WFXT);
 
   // Only allow SVE2 features if SVE is also available
   if (auxv & HWCAP_SVE) {
