@@ -515,8 +515,6 @@ void VM_Version::get_os_cpu_info() {
       check_feature(auxv,  BIT_MASK(CPU_PACA),       HWCAP_PACA) |
       check_feature(auxv,  BIT_MASK(CPU_FPHP),       HWCAP_FPHP) |
       check_feature(auxv,  BIT_MASK(CPU_ASIMDHP),    HWCAP_ASIMDHP) |
-      check_feature(auxv2, BIT_MASK(CPU_SVE2),       HWCAP2_SVE2) |
-      check_feature(auxv2, BIT_MASK(CPU_SVEBITPERM), HWCAP2_SVEBITPERM) |
       check_feature(auxv2, BIT_MASK(CPU_ECV),        HWCAP2_ECV) |
       check_feature(auxv2, BIT_MASK(CPU_WFXT),       HWCAP2_WFXT);
 
