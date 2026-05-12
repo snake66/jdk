@@ -520,12 +520,9 @@ void VM_Version::get_os_cpu_info() {
 
   // Only allow SVE2 features if SVE is also available
   if (auxv & HWCAP_SVE) {
-    if (auxv2 & HWCAP2_SVE2) {
-      set_feature(CPU_SVE2);
-    }
-    if (auxv2 & HWCAP2_SVEBITPERM) {
-      set_feature(CPU_SVEBITPERM);
-    }
+    _features |=
+        check_feature(auxv2, BIT_MASK(CPU_SVE2),       HWCAP2_SVE2) |
+        check_feature(auxv2, BIT_MASK(CPU_SVEBITPERM), HWCAP2_SVEBITPERM);
   }
 
   /*
