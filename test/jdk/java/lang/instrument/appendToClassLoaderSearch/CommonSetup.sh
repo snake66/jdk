@@ -56,7 +56,7 @@ case "$OS" in
     OS="Windows"
     FS="\\"
     ;;
-  CYGWIN*)
+  CYGWIN* | MSYS* | MINGW*)
     PS=";"
     OS="Windows"
     FS="\\"
