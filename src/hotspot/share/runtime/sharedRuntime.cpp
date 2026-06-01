@@ -1799,7 +1799,7 @@ JRT_LEAF(void, SharedRuntime::fixup_callers_callsite(Method* method, address cal
 
   // write lock needed because we might patch call site by set_to_clean()
   // and is_unloading() can modify nmethod's state
-  BSD_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, JavaThread::current()));
+  MACOS_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, JavaThread::current()));
 
   CodeBlob* cb = CodeCache::find_blob(caller_pc);
   if (cb == nullptr || !cb->is_nmethod() || !callee->is_in_use() || callee->is_unloading()) {
