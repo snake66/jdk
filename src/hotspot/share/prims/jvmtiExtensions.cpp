@@ -134,7 +134,7 @@ static jvmtiError JNICALL GetCarrierThread(const jvmtiEnv* env, ...) {
     return JVMTI_ERROR_NULL_POINTER;
   }
 
-  BSD_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, current_thread));
+  MACOS_AARCH64_ONLY(ThreadWXEnable __wx(WXWrite, current_thread));
   ThreadInVMfromNative tiv(current_thread);
   MountUnmountDisabler disabler;
 
