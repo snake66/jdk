@@ -58,7 +58,7 @@
 
 JavaVM* _jvm;
 
-static jmp_buf  context;
+static sigjmp_buf  context;
 
 static volatile int _last_si_code = -1;
 static volatile int _failures = 0;
