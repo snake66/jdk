@@ -23,7 +23,11 @@
  *
  */
 
+#if defined(__APPLE__)
+#include "os_perf_macos.hpp"
+#else
 #include "os_perf_bsd.hpp"
+#endif
 #include "memory/resourceArea.hpp"
 #include <net/if.h>
 #include <net/if_dl.h>
