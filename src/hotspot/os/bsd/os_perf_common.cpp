@@ -25,6 +25,7 @@
 
 #if defined(__APPLE__)
 #include "os_perf_macos.hpp"
+#import <libproc.h>
 #else
 #include "os_perf_bsd.hpp"
 #endif
