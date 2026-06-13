@@ -457,10 +457,8 @@ int proc_pidpath(pid_t pid, char * pbuf, size_t plen) {
     return -1;
   }
 
-  size_t slen = strnlen(argv[0], length);
-  if (slen > 0 && slen < plen) {
-    strlcpy(path, argv[0], plen);
-  }
+  strlcpy(pbuf, argv[0], plen);
+
 #elif defined(__NetBSD__)
   int pmib[] = { CTL_KERN, KERN_PROC_ARGS, pid, KERN_PROC_PATHNAME };
   const u_int pmiblen = sizeof(pmib) / sizeof(pmib[0]);
