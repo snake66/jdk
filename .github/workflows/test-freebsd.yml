@@ -192,7 +192,7 @@ jobs:
             echo 'FreeBSD: { url: "pkg+https://pkg.FreeBSD.org/${ABI}/latest" }' > /usr/local/etc/pkg/repos/FreeBSD.conf
             pkg update -f -q
             pkg upgrade -y
-            pkg install -y openjdk26 gnugrep gtar zip unzip cups bash gmake dwz libiconv harfbuzz lcms2 png giflib jpeg-turbo gsed
+            pkg install -y openjdk26 bzip2 gnugrep gtar zip unzip cups bash gmake dwz libiconv harfbuzz lcms2 png giflib jpeg-turbo gsed
           run: >
             gmake test-prebuilt
             SED=/usr/local/bin/gsed
