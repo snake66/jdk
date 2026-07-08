@@ -41,25 +41,15 @@
 #include "TimeZone_md.h"
 #include "path_util.h"
 
-#define fileopen        fopen
-#define filegets        fgets
-#define fileclose       fclose
-
 #if defined(__linux__) || defined(_ALLBSD_SOURCE)
-#ifdef __FreeBSD__
-static const char *ETC_TIMEZONE_FILE = "/var/db/zoneinfo";
-#endif
 static const char *ZONEINFO_DIR = "/usr/share/zoneinfo";
 static const char *DEFAULT_ZONEINFO_FILE = "/etc/localtime";
-#else
-static const char *SYS_INIT_FILE = "/etc/default/init";
-static const char *ZONEINFO_DIR = "/usr/share/lib/zoneinfo";
-static const char *DEFAULT_ZONEINFO_FILE = "/usr/share/lib/zoneinfo/localtime";
-#endif /* defined(__linux__) || defined(_ALLBSD_SOURCE) */
-
 static const char popularZones[][4] = {"UTC", "GMT"};
 
-#if defined(__linux__) || defined(_ALLBSD_SOURCE) || defined(MACOSX)
+#if defined(__FreeBSD__)
+static const char *ETC_TIMEZONE_FILE = "/var/db/zoneinfo";
+#endif
+
 static char *isFileIdentical(char* buf, size_t size, char *pathname);
 
 /*
@@ -124,7 +114,7 @@ getPathName(const char *dir, const char *name) {
 /*
  * Scans the specified directory and its subdirectories to find a
  * zoneinfo file which has the same content as /etc/localtime on Linux
- * or /usr/share/lib/zoneinfo/localtime on Solaris given in 'buf'.
+ * given in 'buf'.
  * If file is symbolic link, then the contents it points to are in buf.
  * Returns a zone ID if found, otherwise, NULL is returned.
  */
@@ -502,7 +492,7 @@ tzerr:
     return javatz;
 }
 
-#endif /* defined(_AIX) */
+#endif /* defined(__linux__) || defined(MACOSX) || defined(_AIX) */
 
 /*
  * findJavaTZ_md() maps platform time zone ID to Java time zone ID
@@ -569,7 +559,6 @@ char *
 getGMTOffsetID()
 {
     char buf[32];
-    char offset[6];
     struct tm localtm;
     time_t clock = time(NULL);
     if (localtime_r(&clock, &localtm) == NULL) {
@@ -603,6 +592,7 @@ getGMTOffsetID()
     snprintf(buf, sizeof(buf), (const char *)"GMT%c%02.2d:%02.2d",
             gmt_off < 0 ? '-' : '+' , abs(gmt_off / 60), gmt_off % 60);
 #else
+    char offset[6];
     if (strftime(offset, 6, "%z", &localtm) != 5) {
         return strdup("GMT");
     }
