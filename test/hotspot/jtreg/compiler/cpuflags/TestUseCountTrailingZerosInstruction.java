@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,24 +21,32 @@
  * questions.
  */
 
-/*
+/**
  * @test
- * @bug 8261235
- * @requires vm.compiler1.enabled
- * @summary Tests custom bytecode which requires too many virtual registers in the linear scan of C1.
- *          The test should bail out in C1.
- *
- * @compile TestTooManyVirtualRegisters.jasm
- * @run main/othervm -Xbatch -XX:CompileCommand=dontinline,compiler.c1.TestTooManyVirtualRegisters::*
- *                   ${test.main.class}
+ * @bug 8386656
+ * @summary Verify no assertions when running with -XX:-UseCountTrailingZerosInstruction
+ * @requires os.simpleArch == "x64"
+ * @run main/othervm -Xbatch -XX:-UseCountTrailingZerosInstruction ${test.main.class}
  */
 
-package compiler.c1;
+/**
+ * @test
+ * @bug 8386656
+ * @summary Verify no assertions when running with -XX:+UseCountTrailingZerosInstruction
+ * @requires os.simpleArch == "x64"
+ * @run main/othervm -Xbatch -XX:+UseCountTrailingZerosInstruction ${test.main.class}
+ */
 
-public class TestTooManyVirtualRegistersMain {
+package compiler.cpuflags;
+
+import java.util.Arrays;
+
+public class TestUseCountTrailingZerosInstruction {
     public static void main(String[] args) {
-        for (char i = 0; i < 10000; i++) {
-            TestTooManyVirtualRegisters.test(i);
+        byte[] a = new byte[32];
+        byte[] b = new byte[32];
+        for (int i = 0; i < 20_000; i++) {
+            Arrays.mismatch(a, b);
         }
     }
 }

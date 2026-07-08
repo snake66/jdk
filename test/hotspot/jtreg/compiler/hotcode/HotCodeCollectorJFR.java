@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
+ * Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -19,27 +19,28 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
+ *
  */
 
 /*
  * @test
- * @bug 8261235
- * @requires vm.compiler1.enabled
- * @summary Tests custom bytecode which requires too many virtual registers in the linear scan of C1.
- *          The test should bail out in C1.
- *
- * @compile TestTooManyVirtualRegisters.jasm
- * @run main/othervm -Xbatch -XX:CompileCommand=dontinline,compiler.c1.TestTooManyVirtualRegisters::*
- *                   ${test.main.class}
+ * @bug 8385651
+ * @summary Verify the HotCodeSampler and JFR do not attempt to suspend the same JavaThread and crash
+ * @requires vm.compiler2.enabled & vm.hasJFR
+ * @run main/othervm -XX:StartFlightRecording -XX:+UnlockExperimentalVMOptions -XX:+HotCodeHeap -XX:+NMethodRelocation -XX:+UnlockDiagnosticVMOptions
+ *                   -XX:HotCodeIntervalSeconds=0 -XX:HotCodeStartupDelaySeconds=0 -XX:HotCodeStablePercent=-1 -Xlog:hotcode=debug
+ *                   compiler.hotcode.HotCodeCollectorJFR
  */
 
-package compiler.c1;
+package compiler.hotcode;
 
-public class TestTooManyVirtualRegistersMain {
-    public static void main(String[] args) {
-        for (char i = 0; i < 10000; i++) {
-            TestTooManyVirtualRegisters.test(i);
-        }
+public class HotCodeCollectorJFR {
+
+    private static final int FUNC_RUN_MILLIS = 10_000;
+
+    public static void main(String[] args) throws Exception {
+        long start = System.currentTimeMillis();
+        while (System.currentTimeMillis() - start < FUNC_RUN_MILLIS) {}
     }
-}
 
+}
