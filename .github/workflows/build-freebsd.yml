@@ -128,6 +128,7 @@ jobs:
           pkg update -f -q
           pkg upgrade -y
           pkg install -y openjdk26 autoconf automake bzip2 pkgconf gnugrep gtar zip unzip cups bash gmake dwz libiconv harfbuzz lcms2 png giflib jpeg-turbo gsed
+          pkg-config --exists --print-errors harfbuzz
 
       - name: 'Configure in VM'
         shell: freebsd {0}
