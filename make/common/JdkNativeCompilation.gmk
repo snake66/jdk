@@ -59,6 +59,10 @@ else ifeq ($(call isCompiler, clang), true)
     ifeq ($(call isTargetOs, arm), true)
       SetSharedLibraryOrigin = \
           -Wl,-rpath,\$(DOLLAR)ORIGIN$1
+    else ifeq ($(call isTargetOsEnv, bsd.freebsd), true)
+      SetSharedLibraryOrigin = \
+          -Wl,-z,origin -Wl,-rpath,\$(DOLLAR)ORIGIN$1 \
+          -Wl,-rpath,\$(DOLLAR)ORIGIN$1/$(JVM_VARIANT_MAIN)
     else
       SetSharedLibraryOrigin = \
           -Wl,-z,origin -Wl,-rpath,\$(DOLLAR)ORIGIN$1
