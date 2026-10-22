@@ -128,11 +128,11 @@ public class Platform {
     }
 
     public static boolean isBSD() {
-        return osName.toLowerCase().endsWith("bsd");
+        return osName.toLowerCase(ROOT).endsWith("bsd");
     }
 
     public static boolean isOpenBSD() {
-        return osName.toLowerCase().equals("openbsd");
+        return osName.toLowerCase(ROOT).equals("openbsd");
     }
 
     private static boolean isOs(String osname) {
